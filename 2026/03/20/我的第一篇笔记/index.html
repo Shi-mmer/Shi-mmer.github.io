@@ -6,20 +6,23 @@
   
   <title>我的第一篇笔记 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="一、本节要点 红黑树是一种自平衡二叉查找树 通过“颜色”和“旋转”保证高度对数级 插入、删除、查找的时间复杂度都是 O(log n)  二、详细内容红黑树可以把它想象成“黑白棋盘上的有序家谱树”，每个节点都有黑色或红色。它不仅记录了左右子树大小关系（左小右大），还附带颜色信息来控制高度。 2.1 红黑树的五条规则 每个节点要么红要么黑。 根节点必须是黑色（实现中插入后再调整）。 叶子节点（NIL">
+  <meta name="description" content="一、本节要点 红黑树 &#x3D; 二叉查找树 + 颜色约束 + 旋转恢复 五条规则决定了黑高一致性，使最坏高度 O(log n) 插入&#x2F;删除后的“颜色修复+旋转”是核心操作  二、重点高光 红色节点不连续（避免局部链式增长） 从任意节点到叶子路径黑色节点数相同（黑高） 根节点始终黑色，完成平衡后保持不变   高光摘要：  最长路径 ≤ 2 × 最短路径 查找&#x2F;插入&#x2F;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="我的第一篇笔记">
 <meta property="og:url" content="http://example.com/2026/03/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一、本节要点 红黑树是一种自平衡二叉查找树 通过“颜色”和“旋转”保证高度对数级 插入、删除、查找的时间复杂度都是 O(log n)  二、详细内容红黑树可以把它想象成“黑白棋盘上的有序家谱树”，每个节点都有黑色或红色。它不仅记录了左右子树大小关系（左小右大），还附带颜色信息来控制高度。 2.1 红黑树的五条规则 每个节点要么红要么黑。 根节点必须是黑色（实现中插入后再调整）。 叶子节点（NIL">
+<meta property="og:description" content="一、本节要点 红黑树 &#x3D; 二叉查找树 + 颜色约束 + 旋转恢复 五条规则决定了黑高一致性，使最坏高度 O(log n) 插入&#x2F;删除后的“颜色修复+旋转”是核心操作  二、重点高光 红色节点不连续（避免局部链式增长） 从任意节点到叶子路径黑色节点数相同（黑高） 根节点始终黑色，完成平衡后保持不变   高光摘要：  最长路径 ≤ 2 × 最短路径 查找&#x2F;插入&#x2F;">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://example.com/rbtree-insert-step.png">
+<meta property="og:image" content="https://example.com/rbtree-delete-step.png">
 <meta property="article:published_time" content="2026-03-20T05:37:41.000Z">
-<meta property="article:modified_time" content="2026-03-22T01:56:04.330Z">
+<meta property="article:modified_time" content="2026-03-22T02:04:37.566Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="数据结构">
 <meta property="article:tag" content="算法">
 <meta property="article:tag" content="红黑树">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://example.com/rbtree-insert-step.png">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -103,54 +106,74 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <h1 id="一、本节要点"><a href="#一、本节要点" class="headerlink" title="一、本节要点"></a>一、本节要点</h1><ul>
-<li>红黑树是一种自平衡二叉查找树</li>
-<li>通过“颜色”和“旋转”保证高度对数级</li>
-<li>插入、删除、查找的时间复杂度都是 O(log n)</li>
+<li><strong>红黑树 &#x3D; 二叉查找树 + 颜色约束 + 旋转恢复</strong></li>
+<li><strong>五条规则决定了黑高一致性</strong>，使最坏高度 O(log n)</li>
+<li>插入&#x2F;删除后的“颜色修复+旋转”是核心操作</li>
 </ul>
-<h1 id="二、详细内容"><a href="#二、详细内容" class="headerlink" title="二、详细内容"></a>二、详细内容</h1><p>红黑树可以把它想象成“黑白棋盘上的有序家谱树”，每个节点都有黑色或红色。它不仅记录了左右子树大小关系（左小右大），还附带颜色信息来控制高度。</p>
-<h2 id="2-1-红黑树的五条规则"><a href="#2-1-红黑树的五条规则" class="headerlink" title="2.1 红黑树的五条规则"></a>2.1 红黑树的五条规则</h2><ol>
-<li>每个节点要么红要么黑。</li>
-<li>根节点必须是黑色（实现中插入后再调整）。</li>
-<li>叶子节点（NIL 空节点）是黑色。</li>
-<li>红色节点的两个子节点都必须是黑色（不能连续两个红）。</li>
-<li>从任意节点到其所有叶子节点的路径上，黑色节点数量相同。</li>
-</ol>
-<p>这五条规则的直观含义：</p>
+<h1 id="二、重点高光"><a href="#二、重点高光" class="headerlink" title="二、重点高光"></a>二、重点高光</h1><ul>
+<li><strong>红色节点不连续</strong>（避免局部链式增长）</li>
+<li><strong>从任意节点到叶子路径黑色节点数相同（黑高）</strong></li>
+<li><strong>根节点始终黑色</strong>，完成平衡后保持不变</li>
+</ul>
+<blockquote>
+<p>高光摘要：</p>
 <ul>
-<li>红色节点当“借用节点”，不能连着两个红；</li>
-<li>黑色节点做“高度支撑”，保证所有路径高度接近。</li>
+<li>最长路径 ≤ 2 × 最短路径</li>
+<li>查找&#x2F;插入&#x2F;删除均为 O(log n)</li>
+<li>常用于Java TreeMap、C++ std::map、Linux 内核 rbtree</li>
 </ul>
-<h2 id="2-2-为什么红黑树能自平衡？"><a href="#2-2-为什么红黑树能自平衡？" class="headerlink" title="2.2 为什么红黑树能自平衡？"></a>2.2 为什么红黑树能自平衡？</h2><p>把红色节点想成“可选额外高度”，黑色节点是“必须高度”。任何路径黑色节点一样多，最长路径最多是最短路径的两倍，因此高度 O(log n)。</p>
-<h2 id="2-3-插入时的“调色-旋转”流程"><a href="#2-3-插入时的“调色-旋转”流程" class="headerlink" title="2.3 插入时的“调色+旋转”流程"></a>2.3 插入时的“调色+旋转”流程</h2><ol>
-<li>新节点当红节点插入，避免影响黑高。</li>
-<li>如果父节点是黑，完成；如果父节点是红，则需要修复（4 条规则违规）。</li>
-<li>常见修复：<ul>
-<li>父、叔均红：父叔变黑，祖父变红，继续向上处理（颜色翻转）</li>
-<li>父红叔黑：旋转（左旋&#x2F;右旋）+颜色转换，重构局部平衡</li>
-</ul>
-</li>
-</ol>
-<h2 id="2-4-删除关键点"><a href="#2-4-删除关键点" class="headerlink" title="2.4 删除关键点"></a>2.4 删除关键点</h2><p>删除节点会改变黑高，常用策略是用后继替换，然后对“黑高减少”的路径做“借黑”操作：</p>
+</blockquote>
+<h1 id="三、详细说明与证明"><a href="#三、详细说明与证明" class="headerlink" title="三、详细说明与证明"></a>三、详细说明与证明</h1><h2 id="3-1-黑高性质推导（关键证明过程）"><a href="#3-1-黑高性质推导（关键证明过程）" class="headerlink" title="3.1 黑高性质推导（关键证明过程）"></a>3.1 黑高性质推导（关键证明过程）</h2><p>设一棵红黑树中任一节点的黑高为 <code>bh</code>。</p>
 <ul>
-<li>兄弟节点黑且有红子：旋转+变色，补黑</li>
-<li>兄弟节点黑且无红子：兄弟变红，父降黑继续向上</li>
-<li>兄弟节点红：旋转转换为兄弟黑再继续处理</li>
+<li>基础：空节点（NIL）<code>bh = 0</code>。</li>
+<li>若节点为黑，则其任一子树的黑高为 <code>bh - 1</code>；若为红节点，子树黑高为 <code>bh</code>。</li>
 </ul>
-<h2 id="2-5-重点回顾"><a href="#2-5-重点回顾" class="headerlink" title="2.5 重点回顾"></a>2.5 重点回顾</h2><ul>
-<li>核心是“五条规则”，特别是“红不连”和“路径黑高一致”。</li>
-<li>插入删除复杂，查找简单；但整体复杂度保持 O(log n)。</li>
-<li>工程中广泛用于 Java TreeMap、C++ std::map、Linux Kernel rbtree 等。</li>
+<p>从根到任一路径必须包含 <code>bh</code> 个黑节点，且在两个分支上都是一样的。<br>最长路径包含所有黑节点 + 所有可能的红节点（红节点数量 ≤ 黑节点数量），<br>所以最长长度 ≤ 2 × 最短长度。</p>
+<p><strong>证明：</strong></p>
+<ul>
+<li>设某路径黑节点数为 <code>BH</code>，红节点最多为 <code>BH - 1</code>（不能连续红），</li>
+<li>则路径长度 ≤ <code>BH + (BH - 1) = 2BH - 1</code>；最短路径长度至少 <code>BH</code>。</li>
+<li>因此树高度 <code>h ≤ 2BH - 1</code>。</li>
+<li>又由于 <code>BH ≥ log2(n+1)</code>（每个黑节点至少支撑一个完整二叉树），</li>
+<li>得 <code>h = O(log n)</code>。</li>
 </ul>
-<h1 id="三、示例代码"><a href="#三、示例代码" class="headerlink" title="三、示例代码"></a>三、示例代码</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RedBlackTree</span>&lt;K <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;K&gt;, V&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">RED</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">BLACK</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        K key;</span><br><span class="line">        V value;</span><br><span class="line">        Node left, right;</span><br><span class="line">        <span class="type">boolean</span> color;</span><br><span class="line"></span><br><span class="line">        Node(K key, V value, <span class="type">boolean</span> color) &#123;</span><br><span class="line">            <span class="built_in">this</span>.key = key;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">            <span class="built_in">this</span>.color = color;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isRed</span><span class="params">(Node node)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> node != <span class="literal">null</span> &amp;&amp; node.color == RED;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateLeft</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.right;</span><br><span class="line">        h.right = x.left;</span><br><span class="line">        x.left = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateRight</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.left;</span><br><span class="line">        h.left = x.right;</span><br><span class="line">        x.right = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">flipColors</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        h.left.color = BLACK;</span><br><span class="line">        h.right.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(K key, V value)</span> &#123;</span><br><span class="line">        root = put(root, key, value);</span><br><span class="line">        root.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">put</span><span class="params">(Node h, K key, V value)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (h == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Node</span>(key, value, RED);</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">cmp</span> <span class="operator">=</span> key.compareTo(h.key);</span><br><span class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>) h.left = put(h.left, key, value);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>) h.right = put(h.right, key, value);</span><br><span class="line">        <span class="keyword">else</span> h.value = value;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isRed(h.right) &amp;&amp; !isRed(h.left)) h = rotateLeft(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.left.left)) h = rotateRight(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.right)) flipColors(h);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> h;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-2-时间复杂度"><a href="#3-2-时间复杂度" class="headerlink" title="3.2 时间复杂度"></a>3.2 时间复杂度</h2><ul>
+<li>查找：O(h) &#x3D; O(log n)</li>
+<li>插入：O(log n) + 修复旋转（最多常数次）&#x3D; O(log n)</li>
+<li>删除：O(log n) + 修复&#x3D; O(log n)</li>
+</ul>
+<h2 id="3-3-插入修复过程带图解释"><a href="#3-3-插入修复过程带图解释" class="headerlink" title="3.3 插入修复过程带图解释"></a>3.3 插入修复过程带图解释</h2><ol>
+<li>新节点插入后染红（红新生）</li>
+<li>若父黑：结束。若父红（违反规则4），进入修复</li>
+<li>叔叔为红：父叔黑，祖父红，向上继续（颜色翻转）</li>
+<li>叔叔为黑：根据三角&#x2F;直线结构做旋转，并置换颜色</li>
+</ol>
+<p><img src="https://example.com/rbtree-insert-step.png" alt="红黑树插入修复步骤"></p>
+<blockquote>
+<p>图示假设：左边子树插入导致祖父节点平衡被破坏时的 LL&#x2F;RR&#x2F;LR&#x2F;RL 情况。</p>
+</blockquote>
+<h2 id="3-4-删除修复过程带图解释"><a href="#3-4-删除修复过程带图解释" class="headerlink" title="3.4 删除修复过程带图解释"></a>3.4 删除修复过程带图解释</h2><ol>
+<li>目标节点实质删除或换位后，可能产生“双重黑”（黑高度少1）</li>
+<li>兄弟为红：旋转后变为兄弟黑，继续统一处理</li>
+<li>兄弟为黑且有红子：旋转+颜色调整，直接消除双重黑</li>
+<li>兄弟为黑且无红子：兄弟变红，父节点递归处理</li>
+</ol>
+<p><img src="https://example.com/rbtree-delete-step.png" alt="红黑树删除修复步骤"></p>
+<h1 id="四、核心代码（含注释）"><a href="#四、核心代码（含注释）" class="headerlink" title="四、核心代码（含注释）"></a>四、核心代码（含注释）</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RedBlackTree</span>&lt;K <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;K&gt;, V&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">RED</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">BLACK</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        K key;</span><br><span class="line">        V value;</span><br><span class="line">        Node left, right;</span><br><span class="line">        <span class="type">boolean</span> color;</span><br><span class="line">        Node(K key, V value, <span class="type">boolean</span> color) &#123;</span><br><span class="line">            <span class="built_in">this</span>.key = key;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">            <span class="built_in">this</span>.color = color;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isRed</span><span class="params">(Node x)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> x != <span class="literal">null</span> &amp;&amp; x.color == RED;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateLeft</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.right;</span><br><span class="line">        h.right = x.left;</span><br><span class="line">        x.left = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateRight</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.left;</span><br><span class="line">        h.left = x.right;</span><br><span class="line">        x.right = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">flipColors</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        h.left.color = BLACK;</span><br><span class="line">        h.right.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(K key, V val)</span> &#123;</span><br><span class="line">        root = put(root, key, val);</span><br><span class="line">        root.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">put</span><span class="params">(Node h, K key, V val)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (h == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Node</span>(key, val, RED);</span><br><span class="line">        <span class="type">int</span> <span class="variable">cmp</span> <span class="operator">=</span> key.compareTo(h.key);</span><br><span class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>) h.left = put(h.left, key, val);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>) h.right = put(h.right, key, val);</span><br><span class="line">        <span class="keyword">else</span> h.value = val;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isRed(h.right) &amp;&amp; !isRed(h.left)) h = rotateLeft(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.left.left)) h = rotateRight(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.right)) flipColors(h);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> h;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <blockquote>
-<p>结论：红黑树在保证效率的前提下，以“颜色+旋转”的方式实现自平衡，很适合系统级组件中的有序映射。</p>
+<p>小结：</p>
+<ul>
+<li>关键点在“红不连”和“黑高一致”。</li>
+<li>公式证明了高度上界 <code>h ≤ 2 log2(n+1)</code>，确保 O(log n)。</li>
+<li>图示步骤便于直观理解插入&#x2F;删除中的旋转与颜色修复。</li>
+</ul>
 </blockquote>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/03/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E7%AC%94%E8%AE%B0/" data-id="cuid3KEuOinT4KpN-8Fwlz6rW" data-title="我的第一篇笔记" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/03/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E7%AC%94%E8%AE%B0/" data-id="cuidPnqW2vpoLdqMNkIasGoQI" data-title="我的第一篇笔记" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
