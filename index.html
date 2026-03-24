@@ -176,7 +176,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2026-03-22 10:04:37" itemprop="dateModified" datetime="2026-03-22T10:04:37+08:00">2026-03-22</time>
+                <time title="Modified: 2026-03-24 19:01:40" itemprop="dateModified" datetime="2026-03-24T19:01:40+08:00">2026-03-24</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -199,70 +199,211 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="一、本节要点"><a href="#一、本节要点" class="headerlink" title="一、本节要点"></a>一、本节要点</h1><ul>
-<li><strong>红黑树 &#x3D; 二叉查找树 + 颜色约束 + 旋转恢复</strong></li>
-<li><strong>五条规则决定了黑高一致性</strong>，使最坏高度 O(log n)</li>
-<li>插入&#x2F;删除后的“颜色修复+旋转”是核心操作</li>
+          <h1 id="红黑树学习笔记"><a href="#红黑树学习笔记" class="headerlink" title="红黑树学习笔记"></a>红黑树学习笔记</h1><h2 id="目录-Table-of-Contents"><a href="#目录-Table-of-Contents" class="headerlink" title="目录 (Table of Contents)"></a>目录 (Table of Contents)</h2><ul>
+<li><a href="#1-%E7%BA%A2%E9%BB%91%E6%A0%91%E7%9A%84%E6%A6%82%E5%BF%B5">1. 红黑树的概念</a><ul>
+<li><a href="#11-%E7%BA%A2%E9%BB%91%E6%A0%91%E7%9A%84%E6%80%A7%E8%B4%A8">1.1 红黑树的性质</a></li>
+<li><a href="#12-%E9%BB%91%E9%AB%98-black-height">1.2 黑高 (Black Height)</a></li>
 </ul>
-<h1 id="二、重点高光"><a href="#二、重点高光" class="headerlink" title="二、重点高光"></a>二、重点高光</h1><ul>
-<li><strong>红色节点不连续</strong>（避免局部链式增长）</li>
-<li><strong>从任意节点到叶子路径黑色节点数相同（黑高）</strong></li>
-<li><strong>根节点始终黑色</strong>，完成平衡后保持不变</li>
+</li>
+<li><a href="#2-%E6%97%8B%E8%BD%AC">2. 旋转</a><ul>
+<li><a href="#21-%E5%B7%A6%E6%97%8B-left-rotate">2.1 左旋 (Left-Rotate)</a></li>
+<li><a href="#22-%E5%8F%B3%E6%97%8B-right-rotate">2.2 右旋 (Right-Rotate)</a></li>
 </ul>
-<blockquote>
-<p>高光摘要：</p>
-<ul>
-<li>最长路径 ≤ 2 × 最短路径</li>
-<li>查找&#x2F;插入&#x2F;删除均为 O(log n)</li>
-<li>常用于Java TreeMap、C++ std::map、Linux 内核 rbtree</li>
+</li>
+<li><a href="#3-%E6%8F%92%E5%85%A5">3. 插入</a><ul>
+<li><a href="#31-%E6%8F%92%E5%85%A5%E4%BF%AE%E5%A4%8D%E7%9A%84%E4%B8%89%E7%A7%8D%E6%83%85%E5%86%B5">3.1 插入修复的三种情况</a></li>
 </ul>
-</blockquote>
-<h1 id="三、详细说明与证明"><a href="#三、详细说明与证明" class="headerlink" title="三、详细说明与证明"></a>三、详细说明与证明</h1><h2 id="3-1-黑高性质推导（关键证明过程）"><a href="#3-1-黑高性质推导（关键证明过程）" class="headerlink" title="3.1 黑高性质推导（关键证明过程）"></a>3.1 黑高性质推导（关键证明过程）</h2><p>设一棵红黑树中任一节点的黑高为 <code>bh</code>。</p>
-<ul>
-<li>基础：空节点（NIL）<code>bh = 0</code>。</li>
-<li>若节点为黑，则其任一子树的黑高为 <code>bh - 1</code>；若为红节点，子树黑高为 <code>bh</code>。</li>
+</li>
+<li><a href="#4-%E5%88%A0%E9%99%A4">4. 删除</a><ul>
+<li><a href="#41-%E5%88%A0%E9%99%A4%E8%BF%87%E7%A8%8B%E6%A6%82%E8%BF%B0">4.1 删除过程概述</a></li>
+<li><a href="#42-%E5%88%A0%E9%99%A4%E4%BF%AE%E5%A4%8D%E7%9A%84%E5%9B%9B%E7%A7%8D%E6%83%85%E5%86%B5">4.2 删除修复的四种情况</a></li>
 </ul>
-<p>从根到任一路径必须包含 <code>bh</code> 个黑节点，且在两个分支上都是一样的。<br>最长路径包含所有黑节点 + 所有可能的红节点（红节点数量 ≤ 黑节点数量），<br>所以最长长度 ≤ 2 × 最短长度。</p>
-<p><strong>证明：</strong></p>
-<ul>
-<li>设某路径黑节点数为 <code>BH</code>，红节点最多为 <code>BH - 1</code>（不能连续红），</li>
-<li>则路径长度 ≤ <code>BH + (BH - 1) = 2BH - 1</code>；最短路径长度至少 <code>BH</code>。</li>
-<li>因此树高度 <code>h ≤ 2BH - 1</code>。</li>
-<li>又由于 <code>BH ≥ log2(n+1)</code>（每个黑节点至少支撑一个完整二叉树），</li>
-<li>得 <code>h = O(log n)</code>。</li>
+</li>
+<li><a href="#5-%E5%AE%9A%E7%90%86%E4%B8%8E%E8%AF%81%E6%98%8E">5. 定理与证明</a><ul>
+<li><a href="#51-%E5%BC%95%E7%90%86-1%E9%AB%98%E5%BA%A6%E4%B8%8A%E7%95%8C">5.1 引理 1：高度上界</a></li>
+<li><a href="#52-%E6%8F%92%E5%85%A5%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%B8%8D%E5%8F%98%E5%BC%8F">5.2 插入的循环不变式</a></li>
+<li><a href="#53-%E5%88%A0%E9%99%A4%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%B8%8D%E5%8F%98%E5%BC%8F">5.3 删除的循环不变式</a></li>
 </ul>
-<h2 id="3-2-时间复杂度"><a href="#3-2-时间复杂度" class="headerlink" title="3.2 时间复杂度"></a>3.2 时间复杂度</h2><ul>
-<li>查找：O(h) &#x3D; O(log n)</li>
-<li>插入：O(log n) + 修复旋转（最多常数次）&#x3D; O(log n)</li>
-<li>删除：O(log n) + 修复&#x3D; O(log n)</li>
+</li>
+<li><a href="#6-%E6%80%BB%E7%BB%93">6. 总结</a></li>
 </ul>
-<h2 id="3-3-插入修复过程带图解释"><a href="#3-3-插入修复过程带图解释" class="headerlink" title="3.3 插入修复过程带图解释"></a>3.3 插入修复过程带图解释</h2><ol>
-<li>新节点插入后染红（红新生）</li>
-<li>若父黑：结束。若父红（违反规则4），进入修复</li>
-<li>叔叔为红：父叔黑，祖父红，向上继续（颜色翻转）</li>
-<li>叔叔为黑：根据三角&#x2F;直线结构做旋转，并置换颜色</li>
+<hr>
+<h2 id="1-红黑树的概念"><a href="#1-红黑树的概念" class="headerlink" title="1. 红黑树的概念"></a>1. 红黑树的概念</h2><p>红黑树是一种<strong>二叉搜索树</strong>，它在每个节点上增加了一个存储位来表示节点的颜色（<strong>Red</strong> 或 <strong>Black</strong>）。通过对任何一条从根到叶子的路径上节点颜色的约束，红黑树确保没有一条路径会比其他路径长出两倍，因而是<strong>近似平衡</strong>的。</p>
+<h3 id="1-1-红黑树的性质"><a href="#1-1-红黑树的性质" class="headerlink" title="1.1 红黑树的性质"></a>1.1 红黑树的性质</h3><p>一棵红黑树必须满足以下 <strong>5 条性质</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>性质编号</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>节点颜色：每个节点要么是红色，要么是黑色。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>根节点：根节点是黑色的。</td>
+</tr>
+<tr>
+<td>3</td>
+<td>叶子节点（NIL）：每个叶子节点（NIL，通常指空节点）是黑色的。<br>注：在实际实现中，为了简化边界条件，我们通常使用一个哨兵节点 T.nil 来代替所有的 NULL，T.nil 是黑色的。</td>
+</tr>
+<tr>
+<td>4</td>
+<td>红色约束：如果一个节点是红色的，则它的两个子节点都是黑色的（即不能有两个连续的红色节点）。</td>
+</tr>
+<tr>
+<td>5</td>
+<td>黑色高度：对于每个节点，从该节点到其所有后代叶子节点的简单路径上，均包含相同数目的黑色节点。</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-黑高-Black-Height"><a href="#1-2-黑高-Black-Height" class="headerlink" title="1.2 黑高 (Black Height)"></a>1.2 黑高 (Black Height)</h3><p>从某个节点 x 出发（不包括 x 自身），到达其任意一个叶子节点的路径上的黑色节点个数，称为该节点的<strong>黑高</strong>，记为 <strong>bh(x)</strong>。</p>
+<p>根据性质 5，树的黑高（根的黑高）是确定的。</p>
+<hr>
+<h2 id="2-旋转"><a href="#2-旋转" class="headerlink" title="2. 旋转"></a>2. 旋转</h2><p>插入和删除操作可能会破坏红黑树的性质，我们需要通过<strong>重新着色</strong>和<strong>旋转</strong>来修复。旋转分为<strong>左旋</strong>和<strong>右旋</strong>，它们是局部调整子树平衡的基本操作。</p>
+<h3 id="2-1-左旋-Left-Rotate"><a href="#2-1-左旋-Left-Rotate" class="headerlink" title="2.1 左旋 (Left-Rotate)"></a>2.1 左旋 (Left-Rotate)</h3><p>假设节点 x 的右子节点是 y（y 不能为 T.nil）。左旋以 x 为轴，将 y 提上来作为子树的根，x 变成 y 的左子节点。</p>
+<p><strong>伪代码逻辑：</strong></p>
+<ol>
+<li>y &#x3D; x.right</li>
+<li>x.right &#x3D; y.left （将 y 的左子树挂给 x 的右）</li>
+<li>处理 y.left 的父指针。</li>
+<li>y.parent &#x3D; x.parent （将 y 连接到 x 原来的父节点上）</li>
+<li>根据 x 是其父节点的左还是右，更新父节点指向 y。</li>
+<li>y.left &#x3D; x （x 成为 y 的左孩子）</li>
+<li>x.parent &#x3D; y</li>
 </ol>
-<p><img src="https://example.com/rbtree-insert-step.png" alt="红黑树插入修复步骤"></p>
-<blockquote>
-<p>图示假设：左边子树插入导致祖父节点平衡被破坏时的 LL&#x2F;RR&#x2F;LR&#x2F;RL 情况。</p>
-</blockquote>
-<h2 id="3-4-删除修复过程带图解释"><a href="#3-4-删除修复过程带图解释" class="headerlink" title="3.4 删除修复过程带图解释"></a>3.4 删除修复过程带图解释</h2><ol>
-<li>目标节点实质删除或换位后，可能产生“双重黑”（黑高度少1）</li>
-<li>兄弟为红：旋转后变为兄弟黑，继续统一处理</li>
-<li>兄弟为黑且有红子：旋转+颜色调整，直接消除双重黑</li>
-<li>兄弟为黑且无红子：兄弟变红，父节点递归处理</li>
-</ol>
-<p><img src="https://example.com/rbtree-delete-step.png" alt="红黑树删除修复步骤"></p>
-<h1 id="四、核心代码（含注释）"><a href="#四、核心代码（含注释）" class="headerlink" title="四、核心代码（含注释）"></a>四、核心代码（含注释）</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RedBlackTree</span>&lt;K <span class="keyword">extends</span> <span class="title class_">Comparable</span>&lt;K&gt;, V&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">RED</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">boolean</span> <span class="variable">BLACK</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        K key;</span><br><span class="line">        V value;</span><br><span class="line">        Node left, right;</span><br><span class="line">        <span class="type">boolean</span> color;</span><br><span class="line">        Node(K key, V value, <span class="type">boolean</span> color) &#123;</span><br><span class="line">            <span class="built_in">this</span>.key = key;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">            <span class="built_in">this</span>.color = color;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isRed</span><span class="params">(Node x)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> x != <span class="literal">null</span> &amp;&amp; x.color == RED;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateLeft</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.right;</span><br><span class="line">        h.right = x.left;</span><br><span class="line">        x.left = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">rotateRight</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">x</span> <span class="operator">=</span> h.left;</span><br><span class="line">        h.left = x.right;</span><br><span class="line">        x.right = h;</span><br><span class="line">        x.color = h.color;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">flipColors</span><span class="params">(Node h)</span> &#123;</span><br><span class="line">        h.color = RED;</span><br><span class="line">        h.left.color = BLACK;</span><br><span class="line">        h.right.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">put</span><span class="params">(K key, V val)</span> &#123;</span><br><span class="line">        root = put(root, key, val);</span><br><span class="line">        root.color = BLACK;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">put</span><span class="params">(Node h, K key, V val)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (h == <span class="literal">null</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Node</span>(key, val, RED);</span><br><span class="line">        <span class="type">int</span> <span class="variable">cmp</span> <span class="operator">=</span> key.compareTo(h.key);</span><br><span class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>) h.left = put(h.left, key, val);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>) h.right = put(h.right, key, val);</span><br><span class="line">        <span class="keyword">else</span> h.value = val;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isRed(h.right) &amp;&amp; !isRed(h.left)) h = rotateLeft(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.left.left)) h = rotateRight(h);</span><br><span class="line">        <span class="keyword">if</span> (isRed(h.left) &amp;&amp; isRed(h.right)) flipColors(h);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> h;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>小结：</p>
-<ul>
-<li>关键点在“红不连”和“黑高一致”。</li>
-<li>公式证明了高度上界 <code>h ≤ 2 log2(n+1)</code>，确保 O(log n)。</li>
-<li>图示步骤便于直观理解插入&#x2F;删除中的旋转与颜色修复。</li>
+<h3 id="2-2-右旋-Right-Rotate"><a href="#2-2-右旋-Right-Rotate" class="headerlink" title="2.2 右旋 (Right-Rotate)"></a>2.2 右旋 (Right-Rotate)</h3><p>右旋是左旋的<strong>逆操作</strong>，以 x 为轴，将其左子节点 y 提上来。</p>
+<hr>
+<h2 id="3-插入"><a href="#3-插入" class="headerlink" title="3. 插入"></a>3. 插入</h2><p>插入操作分为两步：</p>
+<ol>
+<li>按照二叉搜索树的规则，将新节点 z 插入到红黑树中，并将 z 着色为<strong>红色</strong>。<ul>
+<li><strong>为什么是红色？</strong> 因为如果插黑色，会破坏性质 5（黑高不等），影响范围太大。插红色只可能破坏性质 2（根为黑）或性质 4（红红冲突）。</li>
 </ul>
+</li>
+<li>调用插入修复函数 <strong>RB-INSERT-FIXUP</strong>。</li>
+</ol>
+<h3 id="3-1-插入修复的三种情况（以父节点为祖父节点的左孩子为例）"><a href="#3-1-插入修复的三种情况（以父节点为祖父节点的左孩子为例）" class="headerlink" title="3.1 插入修复的三种情况（以父节点为祖父节点的左孩子为例）"></a>3.1 插入修复的三种情况（以父节点为祖父节点的左孩子为例）</h3><p>假设 z 是红色。我们需要循环处理，直到没有红红冲突。设 z 的父节点为 p，祖父节点为 g。</p>
+<ul>
+<li><p><strong>Case 1: 叔叔节点 u 是红色</strong></p>
+<ul>
+<li><strong>操作：</strong> 将 p 和 u 变为黑色，g 变为红色。</li>
+<li><strong>效果：</strong> 解决了当前的红红冲突，但将红色上移到了祖父节点。</li>
+<li><strong>下一步：</strong> 将 z 指向 g，继续检查祖父节点。</li>
+<li><strong>证明：</strong> 此操作保持了以 g 为根的子树的黑高不变。因为原本路径上的黑色节点数：1(p黑)+1(g黑) &#x3D; 2，改变后 1(p黑)+1(u黑)，但 g 变红，所以黑色节点数依然为 2（若从 g 上方看，黑高未变）。</li>
+</ul>
+</li>
+<li><p><strong>Case 2: 叔叔节点 u 是黑色，且 z 是右孩子</strong></p>
+<ul>
+<li><strong>操作：</strong> 对 p 进行一次左旋。</li>
+<li><strong>效果：</strong> 将 Case 2 转化为 Case 3。</li>
+<li><strong>下一步：</strong> z 指向 p，进入 Case 3。</li>
+</ul>
+</li>
+<li><p><strong>Case 3: 叔叔节点 u 是黑色，且 z 是左孩子</strong></p>
+<ul>
+<li><strong>操作：</strong> 将 p 变为黑色，g 变为红色，然后对 g 进行一次右旋。</li>
+<li><strong>效果：</strong> 重新着色并旋转后，消除了红红冲突，且该子树的黑高恢复平衡，循环结束。</li>
+<li><strong>证明：</strong> 旋转前后，黑高得以保持。原本路径上的黑色节点计数在变换前后一致，且满足了性质 4。</li>
+</ul>
+</li>
+</ul>
+<p><img src="/images/824de01ca02b833e2e020242774e24d2.jpg" alt="红黑树插入修复步骤"></p>
+<blockquote>
+<p>图示：插入修复的三种情况流程图。</p>
 </blockquote>
+<hr>
+<h2 id="4-删除"><a href="#4-删除" class="headerlink" title="4. 删除"></a>4. 删除</h2><p>删除操作是红黑树中最复杂的部分。算法导论使用 <strong>“替换”</strong> 的方法，并通过一个变量 x 来追踪可能破坏红黑性质的位置。</p>
+<h3 id="4-1-删除过程概述"><a href="#4-1-删除过程概述" class="headerlink" title="4.1 删除过程概述"></a>4.1 删除过程概述</h3><ol>
+<li>找到要删除的节点 z。</li>
+<li>y 是实际被移除的节点（如果 z 有少于两个子节点，则 y&#x3D;z；否则 y 是 z 的后继）。</li>
+<li>x 是 y 的唯一子节点（如果 y 没有子节点，x 是哨兵 T.nil）。</li>
+<li>用 x 替换 y。</li>
+<li>如果 y 的颜色是黑色，那么删除 y 会导致黑高减少，必须调用 <strong>RB-DELETE-FIXUP</strong> 来修复。<ul>
+<li>如果 y 是红色，删除它不影响黑高，不需要修复。</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-2-删除修复的四种情况（以-x-是其父节点的左孩子为例）"><a href="#4-2-删除修复的四种情况（以-x-是其父节点的左孩子为例）" class="headerlink" title="4.2 删除修复的四种情况（以 x 是其父节点的左孩子为例）"></a>4.2 删除修复的四种情况（以 x 是其父节点的左孩子为例）</h3><p>修复的目标是解决**“双黑”**问题（即 x 多了一层黑色，导致黑高不平衡）。我们用 w 表示 x 的兄弟节点。<br>—<img src="/images/2673113ff9be91bdd85d5b00a4c95d0a.jpg" alt="图1"></p>
+<ul>
+<li><p><strong>Case 1: w 是红色</strong></p>
+<ul>
+<li><strong>条件：</strong> 兄弟节点是红色。</li>
+<li><strong>操作：</strong> 将 w 变为黑色，x.parent 变为红色，对 x.parent 进行左旋。</li>
+<li><strong>效果：</strong> 转化为 Case 2、3 或 4。</li>
+<li><strong>目的：</strong> 将红兄弟转为黑兄弟，并调整结构以便后续处理。</li>
+</ul>
+</li>
+<li><p><strong>Case 2: w 是黑色，且 w 的两个子节点都是黑色</strong></p>
+<ul>
+<li><strong>条件：</strong> 兄弟是黑，且侄子们都是黑。</li>
+<li><strong>操作：</strong> 将 w 变为红色，将 x 指向 x.parent。</li>
+<li><strong>效果：</strong> 从 x 和 w 各抽走一层黑色（x 少一层黑，w 变红），将上移的黑层交给父节点处理。</li>
+<li><strong>证明：</strong> 原本 x 侧有“额外黑”，w 侧无额外黑。w 变红后，w 侧黑高减少1，与 x 侧平衡。但整体子树比原来少了一个黑节点，因此需要将父节点作为新的 x 向上修复。</li>
+</ul>
+</li>
+<li><p><strong>Case 3: w 是黑色，w 的左孩子是红色，右孩子是黑色</strong></p>
+<ul>
+<li><strong>条件：</strong> 兄弟是黑，左侄红，右侄黑。</li>
+<li><strong>操作：</strong> 将 w.left 变为黑色，w 变为红色，对 w 进行右旋。</li>
+<li><strong>效果：</strong> 转化为 Case 4。</li>
+</ul>
+</li>
+<li><p><strong>Case 4: w 是黑色，w 的右孩子是红色</strong></p>
+<ul>
+<li><strong>条件：</strong> 兄弟是黑，右侄红（左侄任意）。</li>
+<li><strong>操作：</strong> 将 w 的颜色设为 x.parent 的颜色，x.parent 变为黑色，w.right 变为黑色，对 x.parent 进行左旋。</li>
+<li><strong>效果：</strong> 这是最终的修复步骤。消除了 x 的额外黑色，且保持了黑高平衡。</li>
+<li><strong>证明：</strong> 左旋后，x 侧获得了新的黑色节点（来自原父节点），兄弟侧的黑高通过将右侄变黑得以维持。</li>
+</ul>
+</li>
+</ul>
+<p>—<img src="/images/6f389129c4d2a720b664f0fa74a73f93.jpg" alt="图1"></p>
+<h2 id="5-定理与证明"><a href="#5-定理与证明" class="headerlink" title="5. 定理与证明"></a>5. 定理与证明</h2><h3 id="5-1-引理-1：高度上界"><a href="#5-1-引理-1：高度上界" class="headerlink" title="5.1 引理 1：高度上界"></a>5.1 引理 1：高度上界</h3><p><strong>定理：</strong> 一棵有 n 个内部节点（不包括哨兵）的红黑树，其高度 h \leq 2\log_2(n+1)。</p>
+<p><strong>证明思路：</strong></p>
+<ol>
+<li><strong>合并黑色节点：</strong> 将红色节点合并到其黑色的父节点中。这样，每个黑色节点（及其红色子节点）构成一个“2-3-4树”节点（包含1个黑节点+最多2个红孩子）。</li>
+<li><strong>计算高度关系：</strong> 在合并后的树中，每个节点至少有 2 个子节点（因为原红黑树性质保证红节点不能连续，所以黑节点至少有两个黑子节点）。</li>
+<li><strong>利用黑高：</strong> 设树的黑高为 bh（根的黑高）。根据性质 4（红节点不连续），从根到叶子的路径上，红色节点数 \leq 黑色节点数。因此，原树的高度 h \leq 2 \cdot bh。</li>
+<li><strong>节点数下界：</strong> 在黑高为 bh 的树中，内部节点数至少是 2^{bh} - 1（类似于满二叉树的最少节点数）。<ul>
+<li>即 n \geq 2^{bh} - 1。</li>
+<li>所以 bh \leq \log_2(n+1)。</li>
+</ul>
+</li>
+<li><strong>结论：</strong> h \leq 2 \log_2(n+1)。</li>
+</ol>
+<h3 id="5-2-插入的循环不变式"><a href="#5-2-插入的循环不变式" class="headerlink" title="5.2 插入的循环不变式"></a>5.2 插入的循环不变式</h3><p>在插入修复过程中，我们维护以下<strong>不变式</strong>：</p>
+<ol>
+<li>节点 z 是红色的。</li>
+<li>如果 z 的父节点是红色，则红黑性质被破坏（只有一个红红冲突）。</li>
+<li>所有其他红黑性质保持（包括黑高一致）。</li>
+</ol>
+<p><strong>终止性：</strong></p>
+<ul>
+<li>当 z 是根时，将其染黑（性质 2 恢复）。</li>
+<li>当父节点为黑色时，循环终止（性质 4 满足）。</li>
+<li>通过 Case 3 的旋转和着色，直接修复了冲突，循环终止。</li>
+</ul>
+<h3 id="5-3-删除的循环不变式"><a href="#5-3-删除的循环不变式" class="headerlink" title="5.3 删除的循环不变式"></a>5.3 删除的循环不变式</h3><p>在删除修复过程中，维护<strong>不变式</strong>：</p>
+<ol>
+<li>节点 x 具有“额外的一层黑色”（即 x 是双重黑色或红色&amp;黑色，在算法中通过指针追踪）。</li>
+<li>除了对 x 的计数外，所有从 x 到叶子的路径黑高一致。</li>
+</ol>
+<p><strong>终止性：</strong></p>
+<ul>
+<li>Case 2 将额外黑色上移，直到遇到根（直接将根的多余黑去掉）或红色节点（将红变黑即可）。</li>
+<li>Case 4 通过旋转和着色，消除了额外黑色，无需继续循环。</li>
+</ul>
+<hr>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h2><p>红黑树通过引入<strong>颜色</strong>和 <strong>5 条性质</strong>，保证了最坏情况下的查找、插入、删除操作时间复杂度均为 <strong>O(\log n)</strong>。</p>
+<ul>
+<li><strong>优势：</strong> 相对于 AVL 树，红黑树在插入和删除时需要的旋转次数更少（平均约为 1 次旋转），因此在实际应用（如 Linux 内核调度、C++ STL map）中更为常用。</li>
+<li><strong>学习重点：</strong><ul>
+<li>重点理解旋转操作如何不破坏二叉搜索树的中序性质。</li>
+<li>以及如何通过颜色变换在 O(\log n) 时间内恢复平衡。</li>
+</ul>
+</li>
+</ul>
 
       
     </div>
@@ -509,6 +650,59 @@
   
 
   
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
