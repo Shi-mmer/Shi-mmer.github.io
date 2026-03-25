@@ -31,7 +31,7 @@
 <meta property="og:image" content="http://example.com/images/2673113ff9be91bdd85d5b00a4c95d0a.jpg">
 <meta property="og:image" content="http://example.com/images/6f389129c4d2a720b664f0fa74a73f93.jpg">
 <meta property="article:published_time" content="2026-03-20T05:37:41.000Z">
-<meta property="article:modified_time" content="2026-03-25T11:55:39.648Z">
+<meta property="article:modified_time" content="2026-03-25T12:11:57.416Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="数据结构">
 <meta property="article:tag" content="算法">
@@ -187,7 +187,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2026-03-25 19:55:39" itemprop="dateModified" datetime="2026-03-25T19:55:39+08:00">2026-03-25</time>
+                <time title="Modified: 2026-03-25 20:11:57" itemprop="dateModified" datetime="2026-03-25T20:11:57+08:00">2026-03-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -399,18 +399,18 @@
 </details>
 
 <p>—<img src="/images/6f389129c4d2a720b664f0fa74a73f93.jpg" alt="图1"></p>
-<h2 id="5-定理与证明"><a href="#5-定理与证明" class="headerlink" title="5. 定理与证明"></a>5. 定理与证明</h2><h3 id="5-1-引理-1：高度上界"><a href="#5-1-引理-1：高度上界" class="headerlink" title="5.1 引理 1：高度上界"></a>5.1 引理 1：高度上界</h3><p><strong>定理：</strong> 一棵有 n 个内部节点（不包括哨兵）的红黑树，其高度 h \leq 2\log_2(n+1)。</p>
+<h2 id="5-定理与证明"><a href="#5-定理与证明" class="headerlink" title="5. 定理与证明"></a>5. 定理与证明</h2><h3 id="5-1-引理-1：高度上界"><a href="#5-1-引理-1：高度上界" class="headerlink" title="5.1 引理 1：高度上界"></a>5.1 引理 1：高度上界</h3><p><strong>定理：</strong> 一棵有 n 个内部节点（不包括哨兵）的红黑树，其高度 $h \le 2\log_2(n+1)$。</p>
 <p><strong>证明思路：</strong></p>
 <ol>
 <li><strong>合并黑色节点：</strong> 将红色节点合并到其黑色的父节点中。这样，每个黑色节点（及其红色子节点）构成一个“2-3-4树”节点（包含1个黑节点+最多2个红孩子）。</li>
 <li><strong>计算高度关系：</strong> 在合并后的树中，每个节点至少有 2 个子节点（因为原红黑树性质保证红节点不能连续，所以黑节点至少有两个黑子节点）。</li>
-<li><strong>利用黑高：</strong> 设树的黑高为 bh（根的黑高）。根据性质 4（红节点不连续），从根到叶子的路径上，红色节点数 \leq 黑色节点数。因此，原树的高度 h \leq 2 \cdot bh。</li>
-<li><strong>节点数下界：</strong> 在黑高为 bh 的树中，内部节点数至少是 2^{bh} - 1（类似于满二叉树的最少节点数）。<ul>
-<li>即 n \geq 2^{bh} - 1。</li>
-<li>所以 bh \leq \log_2(n+1)。</li>
+<li><strong>利用黑高：</strong> 设树的黑高为 $bh$（根的黑高）。根据性质 4（红节点不连续），从根到叶子的路径上，红色节点数 $\le$ 黑色节点数。因此，原树的高度 $h \le 2 \cdot bh$。</li>
+<li><strong>节点数下界：</strong> 在黑高为 $bh$ 的树中，内部节点数至少是 $2^{bh} - 1$（类似于满二叉树的最少节点数）。<ul>
+<li>即 $n \ge 2^{bh} - 1$。</li>
+<li>所以 $bh \le \log_2(n+1)$。</li>
 </ul>
 </li>
-<li><strong>结论：</strong> h \leq 2 \log_2(n+1)。</li>
+<li><strong>结论：</strong> $h \le 2 \log_2(n+1)$。</li>
 </ol>
 <h3 id="5-2-插入的循环不变式"><a href="#5-2-插入的循环不变式" class="headerlink" title="5.2 插入的循环不变式"></a>5.2 插入的循环不变式</h3><p>在插入修复过程中，我们维护以下<strong>不变式</strong>：</p>
 <ol>
